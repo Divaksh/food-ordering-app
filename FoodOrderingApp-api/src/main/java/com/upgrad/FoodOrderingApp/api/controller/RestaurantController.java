@@ -7,14 +7,12 @@ import com.upgrad.FoodOrderingApp.api.model.RestaurantListResponse;
 import com.upgrad.FoodOrderingApp.service.businness.CategoryService;
 import com.upgrad.FoodOrderingApp.service.businness.RestaurantService;
 import com.upgrad.FoodOrderingApp.service.entity.RestaurantEntity;
+import com.upgrad.FoodOrderingApp.service.exception.RestaurantNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.awt.*;
 import java.math.BigDecimal;
@@ -75,6 +73,52 @@ public class RestaurantController {
 
         //Returning the response with the desired http status code
         return new ResponseEntity<RestaurantListResponse>(restaurantListResponse, HttpStatus.OK);
+    }
+
+    //This method returns restaurant/s by name. Its a GET Request. It takes restaurant name as a path variable
+    //If the restaurant name field entered by the customer is empty, throw “RestaurantNotFoundException”
+    //If there are no restaurants by the name entered by the customer, return an empty list with corresponding HTTP status
+    //It returns the restaurant list as per the restaurant name search field
+    //Searched restaurants are also displayed in the alphabetical order
+
+    @CrossOrigin
+    @RequestMapping(method = RequestMethod.GET, path = "/restaurant/name/{restaurant_name}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public ResponseEntity<RestaurantListResponse> getRestaurantsByName(@PathVariable("restaurant_name") final String restaurantName)
+            throws RestaurantNotFoundException {
+
+        List<RestaurantEntity> matchedRestaurantsByNameList = restaurantService.restaurantsByName(restaurantName);
+
+        RestaurantListResponse listResponse = new RestaurantListResponse();
+
+        if (matchedRestaurantsByNameList.isEmpty()) {
+            return new ResponseEntity<RestaurantListResponse>(listResponse, HttpStatus.NOT_FOUND);
+        }
+
+        for (RestaurantEntity restaurantEntity : matchedRestaurantsByNameList) {
+
+            RestaurantDetailsResponseAddressState responseAddressState = new RestaurantDetailsResponseAddressState()
+                    .id(UUID.fromString(restaurantEntity.getAddress().getState().getUuid())).
+                            stateName(restaurantEntity.getAddress().getState().getStateName());
+
+            RestaurantDetailsResponseAddress responseAddress = new RestaurantDetailsResponseAddress().
+                    id(UUID.fromString(restaurantEntity.getAddress().getUuid())).
+                    flatBuildingName(restaurantEntity.getAddress().getFlatBuilNo()).
+                    locality(restaurantEntity.getAddress().getLocality()).city(restaurantEntity.getAddress().getCity()).
+                    pincode(restaurantEntity.getAddress().getPincode()).state(responseAddressState);
+
+            String categories = categoryService.getCategoriesByRestaurant(restaurantEntity.getUuid())
+                    .stream().map(rc -> String.valueOf(rc.getCategoryName())).collect(Collectors.joining(","));
+
+            RestaurantList restaurantList = new RestaurantList().id(UUID.fromString(restaurantEntity.getUuid())).
+                    restaurantName(restaurantEntity.getRestaurantName()).photoURL(restaurantEntity.getPhotoUrl())
+                    .customerRating(new BigDecimal(restaurantEntity.getCustomerRating())).
+                            averagePrice(restaurantEntity.getAvgPrice()).numberCustomersRated(restaurantEntity.getNumberCustomersRated())
+                    .address(responseAddress).categories(categories);
+
+            listResponse.addRestaurantsItem(restaurantList);
+        }
+        return new ResponseEntity<RestaurantListResponse>(listResponse, HttpStatus.OK);
+
     }
 
 }
