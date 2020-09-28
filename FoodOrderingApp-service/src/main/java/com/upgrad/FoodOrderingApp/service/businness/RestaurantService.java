@@ -1,11 +1,14 @@
 package com.upgrad.FoodOrderingApp.service.businness;
 
 import com.upgrad.FoodOrderingApp.service.dao.RestaurantDao;
+import com.upgrad.FoodOrderingApp.service.entity.CategoryEntity;
 import com.upgrad.FoodOrderingApp.service.entity.RestaurantEntity;
+import com.upgrad.FoodOrderingApp.service.exception.CategoryNotFoundException;
 import com.upgrad.FoodOrderingApp.service.exception.RestaurantNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 public class RestaurantService {
 
@@ -38,6 +41,28 @@ public class RestaurantService {
         }
 
         return matchingRestaurantList;
+    }
+
+    //This method returns all the restaurants based on the input category Id
+    //If the entered input category id is empty then it throws CNF exception with message Category id field should not be empty
+    //If a input category is not present then it returns another CNF exception No Category By this id
+    //If the input category Id is present then it returns all restaurants in that category in the alphabetical order
+
+    public List<RestaurantEntity> restaurantByCategory(final String categoryId) throws CategoryNotFoundException {
+
+        if (categoryId.equals("")) {
+            throw new CategoryNotFoundException("CNF-001", "Category id field should not be empty");
+        }
+
+        CategoryEntity categoryEntity = categoryDao.getCategoryByUuid(categoryId);
+
+        if (categoryEntity == null) {
+            throw new CategoryNotFoundException("CNF-002", "No Category By this id");
+        }
+
+        List<RestaurantEntity> restaurantListByCategoryId = categoryEntity.getRestaurants();
+        restaurantListByCategoryId.sort(Comparator.comparing(RestaurantEntity::getRestaurantName));
+        return restaurantListByCategoryId;
     }
 
 }
