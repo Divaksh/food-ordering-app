@@ -1,93 +1,38 @@
 package com.upgrad.FoodOrderingApp.service.entity;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 import java.io.Serializable;
-import java.math.BigDecimal;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+
 
 @Entity
-@Table(name="orders")
+@Table(name="order_item")
 @NamedQueries({
-        @NamedQuery(name = "pastOrdersByDate", query = "select o from OrderEntity o where o.customer = :customer order by o.date desc"),
-        @NamedQuery(name = "ordersByCustomer", query = "select o from OrderEntity o where o.customer = :customer order by o.date desc "),
-        @NamedQuery(name = "ordersByRestaurant", query = "select q from OrderEntity q where q.restaurant = :restaurant"),
-
+        @NamedQuery(name = "itemsByOrder", query = "select q from OrderItemEntity q where q.orderId = :orderEntity"),
 })
 
-public class OrderEntity implements Serializable {
-
+public class OrderItemEntity implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="id")
     private Integer id;
 
-    @Column(name="uuid")
-    @Size(max=200)
+    @ManyToOne(fetch=FetchType.EAGER)
+    @JoinColumn(name="order_id")
+    private OrderEntity orderId;
+
+
+    @ManyToOne(fetch=FetchType.EAGER)
+    @JoinColumn(name="item_id")
+    private ItemEntity itemId;
+
     @NotNull
-    private String uuid;
+    @Column(name="quantity")
+    private Integer quantity;
 
-    @Column(name="bill")
     @NotNull
-    private BigDecimal bill;
-
-    @ManyToOne(fetch=FetchType.EAGER)
-    @JoinColumn(name="coupon_id")
-    private CouponEntity coupon;
-
-    @Column(name="discount")
-    @NotNull
-    private BigDecimal discount;
-
-    @Column(name = "date")
-    @NotNull
-    private Date date;
-
-    @ManyToOne(fetch=FetchType.EAGER)
-    @JoinColumn(name="payment_id")
-    private PaymentEntity payment;
-
-    @ManyToOne(fetch=FetchType.EAGER)
-    @JoinColumn(name="customer_id")
-    private CustomerEntity customer;
-
-    @ManyToOne(fetch=FetchType.EAGER)
-    @JoinColumn(name="address_id")
-    private AddressEntity address;
-
-    @ManyToOne(fetch=FetchType.EAGER)
-    @JoinColumn(name="restaurant_id")
-    private RestaurantEntity restaurant;
-
-    @OneToMany(mappedBy = "orderId", cascade= CascadeType.ALL, fetch= FetchType.LAZY)
-    private List<OrderItemEntity> orderItem = new ArrayList<>();
-
-    public OrderEntity() {}
-
-    public OrderEntity(@NotNull @Size(max = 200) String uuid, @NotNull Double bill, @NotNull CouponEntity coupon, @NotNull Double discount, @NotNull Date date, @NotNull PaymentEntity payment, @NotNull CustomerEntity customer, @NotNull AddressEntity address, RestaurantEntity restaurant) {
-        this.uuid = uuid;
-        this.bill = new BigDecimal(bill);
-        this.coupon = coupon;
-        this.discount = new BigDecimal(discount);
-        this.date = date;
-        this.payment = payment;
-        this.customer = customer;
-        this.address = address;
-        this.restaurant = restaurant;
-    }
-
-    public List<OrderItemEntity> getOrderItem() {
-        return orderItem;
-    }
-
-    public void setOrderItem(List<OrderItemEntity> orderItem) {
-        this.orderItem = orderItem;
-    }
+    @Column(name="price")
+    private Integer price;
 
     public Integer getId() {
         return id;
@@ -97,76 +42,38 @@ public class OrderEntity implements Serializable {
         this.id = id;
     }
 
-    public String getUuid() {
-        return uuid;
+    public OrderEntity getOrderId() {
+        return orderId;
     }
 
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
+    public void setOrderId(OrderEntity orderId) {
+        this.orderId = orderId;
     }
 
-    public Double getBill() {
-        return bill.doubleValue();
+    public ItemEntity getItemId() {
+        return itemId;
     }
 
-    public void setBill(Double bill) {
-        this.bill = new BigDecimal(bill);
+    public void setItemId(ItemEntity itemId) {
+        this.itemId = itemId;
     }
 
-    public CouponEntity getCoupon() {
-        return coupon;
+    public Integer getQuantity() {
+        return quantity;
     }
 
-    public void setCoupon(CouponEntity coupon) {
-        this.coupon = coupon;
+    public void setQuantity(Integer quantity) {
+        this.quantity = quantity;
     }
 
-    public Double getDiscount() {
-        return discount.doubleValue();
+    public Integer getPrice() {
+        return price;
     }
 
-    public void setDiscount(Double discount) {
-        this.discount = new BigDecimal(discount);
+    public void setPrice(Integer price) {
+        this.price = price;
     }
 
-    public Date getDate() {
-        return date;
+    public OrderItemEntity() {
     }
-
-    public void setDate(Date date) {
-        this.date = date;
-    }
-
-    public PaymentEntity getPayment() {
-        return payment;
-    }
-
-    public void setPayment(PaymentEntity payment) {
-        this.payment = payment;
-    }
-
-    public CustomerEntity getCustomer() {
-        return customer;
-    }
-
-    public void setCustomer(CustomerEntity customer) {
-        this.customer = customer;
-    }
-
-    public AddressEntity getAddress() {
-        return address;
-    }
-
-    public void setAddress(AddressEntity address) {
-        this.address = address;
-    }
-
-    public RestaurantEntity getRestaurant() {
-        return restaurant;
-    }
-
-    public void setRestaurant(RestaurantEntity restaurant) {
-        this.restaurant = restaurant;
-    }
-
 }
