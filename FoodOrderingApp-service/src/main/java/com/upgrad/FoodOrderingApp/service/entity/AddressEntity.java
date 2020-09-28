@@ -54,9 +54,16 @@ public class AddressEntity implements Serializable {
     @ManyToOne
     @JoinTable(name = "customer_address", joinColumns = @JoinColumn(name = "address_id"),
             inverseJoinColumns = @JoinColumn(name = "customer_id"))
+    private CustomerEntity customer;
+
+    @OneToMany(mappedBy = "address", cascade= CascadeType.ALL, fetch= FetchType.LAZY)
+    private List<CustomerAddressEntity> customerAddresses = new ArrayList<>();
 
     @OneToMany(mappedBy = "address", cascade= CascadeType.ALL, fetch= FetchType.LAZY)
     private List<RestaurantEntity> restaurant = new ArrayList<>();
+
+    @OneToMany(mappedBy = "address", cascade= CascadeType.ALL, fetch= FetchType.LAZY)
+    private List<OrderEntity> orders = new ArrayList<>();
 
     public AddressEntity() {}
 
@@ -70,7 +77,13 @@ public class AddressEntity implements Serializable {
         this.active = 1;
     }
 
+    public List<OrderEntity> getOrders() {
+        return orders;
+    }
 
+    public void setOrders(List<OrderEntity> orders) {
+        this.orders = orders;
+    }
 
     public Integer getId() {
         return id;
@@ -136,7 +149,13 @@ public class AddressEntity implements Serializable {
         this.active = active;
     }
 
+    public List<CustomerAddressEntity> getCustomerAddresses() {
+        return customerAddresses;
+    }
 
+    public void setCustomerAddresses(List<CustomerAddressEntity> customerAddresses) {
+        this.customerAddresses = customerAddresses;
+    }
 
     public List<RestaurantEntity> getRestaurant() {
         return restaurant;
@@ -160,5 +179,13 @@ public class AddressEntity implements Serializable {
 
     public void setStateId(StateEntity stateId) {
         this.stateId = stateId;
+    }
+
+    public CustomerEntity getCustomer() {
+        return customer;
+    }
+
+    public void setCustomer(CustomerEntity customer) {
+        this.customer = customer;
     }
 }
