@@ -51,16 +51,37 @@ public class RestaurantEntity implements Serializable {
     @NotNull
     private Integer numberOfCustomersRated;
 
-    //above properties are done
-
     @ManyToOne(fetch=FetchType.EAGER)
     @JoinColumn(name="address_id")
     private AddressEntity address;
 
+    @OneToMany(mappedBy = "restaurant", cascade= CascadeType.ALL, fetch= FetchType.LAZY)
+    private List<OrderEntity> orders = new ArrayList<>();
+
+    @ManyToMany
+    @JoinTable(name = "restaurant_category", joinColumns = @JoinColumn(name = "restaurant_id"),
+            inverseJoinColumns = @JoinColumn(name = "category_id"))
+    private List<CategoryEntity> categories = new ArrayList<>();
 
     @ManyToMany
     @JoinTable(name = "restaurant_item", joinColumns = @JoinColumn(name = "restaurant_id"),
             inverseJoinColumns = @JoinColumn(name = "item_id"))
+    private List<ItemEntity> items = new ArrayList<>();
+
+    public List<CategoryEntity> getCategories() {
+        return categories;
+    }
+
+    public void setCategories(List<CategoryEntity> categories) {
+        this.categories = categories;
+    }
+
+    @OneToMany(mappedBy = "restaurantId", cascade= CascadeType.ALL, fetch= FetchType.LAZY)
+    private List<RestaurantCategoryEntity> restaurantCategory = new ArrayList<>();
+
+    @OneToMany(mappedBy = "restaurantId", cascade= CascadeType.ALL, fetch= FetchType.LAZY)
+    private List<RestaurantItemEntity> restaurantItem = new ArrayList<>();
+
 
     public Integer getId() {
         return id;
@@ -117,14 +138,6 @@ public class RestaurantEntity implements Serializable {
     public void setNumberCustomersRated(Integer numberOfCustomersRated) {
         this.numberOfCustomersRated = numberOfCustomersRated;
     }
-    @ManyToMany
-    @JoinTable(name = "restaurant_category", joinColumns = @JoinColumn(name = "restaurant_id"),
-            inverseJoinColumns = @JoinColumn(name = "category_id"))
-    private List<CategoryEntity> categories = new ArrayList<>();
-
-    public List<CategoryEntity> getCategories() {
-        return categories;
-    }
 
     public AddressEntity getAddress() {
         return address;
@@ -134,7 +147,40 @@ public class RestaurantEntity implements Serializable {
         this.address = address;
     }
 
+    public List<OrderEntity> getOrders() {
+        return orders;
+    }
+
+    public void setOrders(List<OrderEntity> orders) {
+        this.orders = orders;
+    }
+
+    public List<ItemEntity> getItems() {
+        return items;
+    }
+
+    public void setItems(List<ItemEntity> items) {
+        this.items = items;
+    }
+
+    public List<RestaurantCategoryEntity> getRestaurantCategory() {
+        return restaurantCategory;
+    }
+
+    public void setRestaurantCategory(List<RestaurantCategoryEntity> restaurantCategory) {
+        this.restaurantCategory = restaurantCategory;
+    }
+
+    public List<RestaurantItemEntity> getRestaurantItem() {
+        return restaurantItem;
+    }
+
+    public void setRestaurantItem(List<RestaurantItemEntity> restaurantItem) {
+        this.restaurantItem = restaurantItem;
+    }
+
     public RestaurantEntity() {
     }
 
 }
+
