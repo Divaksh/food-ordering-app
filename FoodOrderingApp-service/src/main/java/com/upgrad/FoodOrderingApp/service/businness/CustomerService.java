@@ -26,6 +26,9 @@ public class CustomerService {
   @Autowired
   private PasswordCryptographyProvider passwordCryptographyProvider;
 
+  @Autowired
+  private CustomerAuthDao customerAuthDao;
+
   @Transactional(propagation = Propagation.REQUIRED)
   public CustomerEntity saveCustomer(CustomerEntity newCustomer) throws SignUpRestrictedException {
     // Finds customer based on contact number
@@ -55,6 +58,32 @@ public class CustomerService {
     // Save customer details in the database
     return customerDao.createCustomer(newCustomer);
 
+  }
+
+  @Transactional(propagation = Propagation.REQUIRED)
+  public CustomerAuthEntity authenticate(final String username, final String password) throws AuthenticationFailedException {
+    // Check if the given username exists in the database
+    CustomerEntity registeredCustomer = customerDao.findByContactNumber(username);
+    if (registeredCustomer == null) {
+      throw new AuthenticationFailedException("ATH-001", "This contact number has not been registered!");
+    }
+    final String encryptedPassword = passwordCryptographyProvider.encrypt(password, registeredCustomer.getSalt());
+    // Verify if the old and new passwords are the same
+    if (registeredCustomer.getPassword().equals(encryptedPassword)) {
+      JwtTokenProvider jwtTokenProvider = new JwtTokenProvider(encryptedPassword);
+      CustomerAuthEntity customerAuthEntity = new CustomerAuthEntity();
+      customerAuthEntity.setUuid(UUID.randomUUID().toString());
+      final ZonedDateTime now = ZonedDateTime.now();
+      final ZonedDateTime expiresAt = now.plusHours(8);
+      customerAuthEntity.setAccessToken(jwtTokenProvider.generateToken(registeredCustomer.getUuid(), now, expiresAt));
+      customerAuthEntity.setExpiresAt(expiresAt);
+      customerAuthEntity.setCustomer(registeredCustomer);
+      customerAuthEntity.setLoginAt(now);
+      CustomerAuthEntity authCustomer = customerAuthDao.createCustomerAuth(customerAuthEntity);
+      return authCustomer;
+    } else {
+      throw new AuthenticationFailedException("ATH-002", "Invalid Credentials");
+    }
   }
 
 
