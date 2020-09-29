@@ -24,9 +24,13 @@ public class CustomerDao {
     }
   }
 
-
   public CustomerEntity createCustomer(CustomerEntity customer) {
     entityManager.persist(customer);
+    return customer;
+  }
+
+  public CustomerEntity updateCustomer(CustomerEntity customer) {
+    entityManager.merge(customer);
     return customer;
   }
 

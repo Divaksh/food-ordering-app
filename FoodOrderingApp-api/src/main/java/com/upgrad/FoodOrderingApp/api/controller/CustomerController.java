@@ -2,11 +2,14 @@ package com.upgrad.FoodOrderingApp.api.controller;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8_VALUE;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
+import static org.springframework.web.bind.annotation.RequestMethod.PUT;
 
 import com.upgrad.FoodOrderingApp.api.model.LoginResponse;
 import com.upgrad.FoodOrderingApp.api.model.LogoutResponse;
 import com.upgrad.FoodOrderingApp.api.model.SignupCustomerRequest;
 import com.upgrad.FoodOrderingApp.api.model.SignupCustomerResponse;
+import com.upgrad.FoodOrderingApp.api.model.UpdateCustomerRequest;
+import com.upgrad.FoodOrderingApp.api.model.UpdateCustomerResponse;
 import com.upgrad.FoodOrderingApp.api.provider.BasicAuthDecoder;
 import com.upgrad.FoodOrderingApp.api.provider.BearerAuthDecoder;
 import com.upgrad.FoodOrderingApp.service.businness.CustomerService;
@@ -15,6 +18,7 @@ import com.upgrad.FoodOrderingApp.service.entity.CustomerEntity;
 import com.upgrad.FoodOrderingApp.service.exception.AuthenticationFailedException;
 import com.upgrad.FoodOrderingApp.service.exception.AuthorizationFailedException;
 import com.upgrad.FoodOrderingApp.service.exception.SignUpRestrictedException;
+import com.upgrad.FoodOrderingApp.service.exception.UpdateCustomerException;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -95,12 +99,42 @@ public class CustomerController {
     final String accessToken = bearerAuthDecoder.getAccessToken();
     // Given access-token, logout the corresponding customer
     CustomerAuthEntity loggedOutCustomerAuth = customerService.logout(accessToken);
-    // Generate the reponse of successful logout
+    // Generate the response of successful logout
     LogoutResponse logoutResponse = new LogoutResponse()
         .id(loggedOutCustomerAuth.getCustomer().getUuid())
         .message("LOGGED OUT SUCCESSFULLY");
     return new ResponseEntity<LogoutResponse>(logoutResponse, HttpStatus.OK);
   }
+
+  @CrossOrigin
+  @RequestMapping(method = PUT, path = "/customer", consumes = APPLICATION_JSON_UTF8_VALUE, produces = APPLICATION_JSON_UTF8_VALUE)
+  public ResponseEntity<UpdateCustomerResponse> updateCustomer(
+      @RequestHeader("authorization") final String authorization,
+      @RequestBody(required = false) final UpdateCustomerRequest updateCustomerRequest)
+      throws UpdateCustomerException, AuthorizationFailedException {
+    // Get the access-token from authorization header(Bearer)
+    BearerAuthDecoder bearerAuthDecoder = new BearerAuthDecoder(authorization);
+    final String accessToken = bearerAuthDecoder.getAccessToken();
+    // Check if the firstname field of request is not empty and accordingly raise an exception
+    if (updateCustomerRequest.getFirstName() == null || updateCustomerRequest.getFirstName()
+        .isEmpty()) {
+      throw new UpdateCustomerException("UCR-002", "First name field should not be empty");
+    }
+    // Get customer based on access-token
+    CustomerEntity customer = customerService.getCustomer(accessToken);
+    // Update user/ customer details
+    customer.setFirstName(updateCustomerRequest.getFirstName());
+    customer.setLastName(updateCustomerRequest.getLastName());
+    CustomerEntity updatedCustomer = customerService.updateCustomer(customer);
+    // Generate response on successfully updating the customer details
+    UpdateCustomerResponse updateCustomerResponse = new UpdateCustomerResponse()
+        .id(updatedCustomer.getUuid())
+        .firstName(updatedCustomer.getFirstName())
+        .lastName(updatedCustomer.getLastName())
+        .status("CUSTOMER DETAILS UPDATED SUCCESSFULLY");
+    return new ResponseEntity<UpdateCustomerResponse>(updateCustomerResponse, HttpStatus.OK);
+  }
+
 
   // Verifies if the input fields aren't empty
   private boolean fieldsComplete(CustomerEntity customer) throws SignUpRestrictedException {
