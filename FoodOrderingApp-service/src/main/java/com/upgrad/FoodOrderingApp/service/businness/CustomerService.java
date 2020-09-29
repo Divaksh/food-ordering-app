@@ -1,22 +1,20 @@
 package com.upgrad.FoodOrderingApp.service.businness;
+
+import com.upgrad.FoodOrderingApp.service.dao.CustomerAuthDao;
 import com.upgrad.FoodOrderingApp.service.dao.CustomerDao;
 import com.upgrad.FoodOrderingApp.service.entity.CustomerAuthEntity;
 import com.upgrad.FoodOrderingApp.service.entity.CustomerEntity;
-import com.upgrad.FoodOrderingApp.service.exception.AuthorizationFailedException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.time.ZonedDateTime;
-import com.upgrad.FoodOrderingApp.service.dao.CustomerAuthDao;
 import com.upgrad.FoodOrderingApp.service.exception.AuthenticationFailedException;
+import com.upgrad.FoodOrderingApp.service.exception.AuthorizationFailedException;
 import com.upgrad.FoodOrderingApp.service.exception.SignUpRestrictedException;
-import com.upgrad.FoodOrderingApp.service.exception.UpdateCustomerException;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 public class CustomerService {
 
@@ -32,14 +30,17 @@ public class CustomerService {
   @Transactional(propagation = Propagation.REQUIRED)
   public CustomerEntity saveCustomer(CustomerEntity newCustomer) throws SignUpRestrictedException {
     // Finds customer based on contact number
-    CustomerEntity existingCustomer = customerDao.findByContactNumber(newCustomer.getContactNumber());
+    CustomerEntity existingCustomer = customerDao
+        .findByContactNumber(newCustomer.getContactNumber());
     // Checks if customer with given contact number exists
     if (existingCustomer != null) {
-      throw new SignUpRestrictedException("SGR-001", "This contact number is already registered! Try other contact number");
+      throw new SignUpRestrictedException("SGR-001",
+          "This contact number is already registered! Try other contact number");
     }
     // Verifies if all input fields are provided
     if (!fieldsComplete(newCustomer)) {
-      throw new SignUpRestrictedException("SGR-005", "Except last name all fields should be filled");
+      throw new SignUpRestrictedException("SGR-005",
+          "Except last name all fields should be filled");
     }
     // Verifies the email address
     if (!validEmailAddress(newCustomer.getEmail())) {
@@ -61,13 +62,16 @@ public class CustomerService {
   }
 
   @Transactional(propagation = Propagation.REQUIRED)
-  public CustomerAuthEntity authenticate(final String username, final String password) throws AuthenticationFailedException {
+  public CustomerAuthEntity authenticate(final String username, final String password)
+      throws AuthenticationFailedException {
     // Check if the given username exists in the database
     CustomerEntity registeredCustomer = customerDao.findByContactNumber(username);
     if (registeredCustomer == null) {
-      throw new AuthenticationFailedException("ATH-001", "This contact number has not been registered!");
+      throw new AuthenticationFailedException("ATH-001",
+          "This contact number has not been registered!");
     }
-    final String encryptedPassword = passwordCryptographyProvider.encrypt(password, registeredCustomer.getSalt());
+    final String encryptedPassword = PasswordCryptographyProvider
+        .encrypt(password, registeredCustomer.getSalt());
     // Verify if the old and new passwords are the same
     if (registeredCustomer.getPassword().equals(encryptedPassword)) {
       JwtTokenProvider jwtTokenProvider = new JwtTokenProvider(encryptedPassword);
@@ -75,7 +79,8 @@ public class CustomerService {
       customerAuthEntity.setUuid(UUID.randomUUID().toString());
       final ZonedDateTime now = ZonedDateTime.now();
       final ZonedDateTime expiresAt = now.plusHours(8);
-      customerAuthEntity.setAccessToken(jwtTokenProvider.generateToken(registeredCustomer.getUuid(), now, expiresAt));
+      customerAuthEntity.setAccessToken(
+          jwtTokenProvider.generateToken(registeredCustomer.getUuid(), now, expiresAt));
       customerAuthEntity.setExpiresAt(expiresAt);
       customerAuthEntity.setCustomer(registeredCustomer);
       customerAuthEntity.setLoginAt(now);
@@ -86,24 +91,47 @@ public class CustomerService {
     }
   }
 
+  @Transactional(propagation = Propagation.REQUIRED)
+  public CustomerAuthEntity logout(final String accessToken) throws AuthorizationFailedException {
+    final ZonedDateTime now;
+    // finds customer based on access token
+    CustomerAuthEntity loggedInCustomerAuth = customerAuthDao
+        .findCustomerAuthByAccessToken(accessToken);
+    // Check if the customer is logged in
+    if (loggedInCustomerAuth == null) {
+      throw new AuthorizationFailedException("ATHR-001", "Customer is not Logged in.");
+    }
+    // Check if the customer has already logged out
+    if (loggedInCustomerAuth.getLogoutAt() != null) {
+      throw new AuthorizationFailedException("ATHR-002",
+          "Customer is logged out. Log in again to access this endpoint.");
+    }
+    // Check if the customer's session has got expired
+    now = ZonedDateTime.now(ZoneId.systemDefault());
+    if (loggedInCustomerAuth.getExpiresAt().isBefore(now) || loggedInCustomerAuth.getExpiresAt()
+        .isEqual(now)) {
+      throw new AuthorizationFailedException("ATHR-003",
+          "Your session is expired. Log in again to access this endpoint.");
+    }
+    loggedInCustomerAuth.setLogoutAt(ZonedDateTime.now(ZoneId.systemDefault()));
+    CustomerAuthEntity loggedOutCustomerAuth = customerAuthDao.update(loggedInCustomerAuth);
+    return loggedOutCustomerAuth;
+  }
 
   // Verify if all fields are provided with values
   private boolean fieldsComplete(CustomerEntity customer) throws SignUpRestrictedException {
-    if ( customer.getFirstName().isEmpty()||
-        customer.getContactNumber().isEmpty()||
-        customer.getEmail().isEmpty() ||
-        customer.getPassword().isEmpty() )
-      return false;
-    else
-      return true;
+    return !customer.getFirstName().isEmpty() &&
+        !customer.getContactNumber().isEmpty() &&
+        !customer.getEmail().isEmpty() &&
+        !customer.getPassword().isEmpty();
   }
 
   // Verify email address
   private boolean validEmailAddress(String email) {
     String regex = "^[\\w-\\+]+(\\.[\\w]+)*@[\\w-]+(\\.[\\w]+)*(\\.[a-z]{2,})$";
     Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
-    Matcher matcher= pattern.matcher(email);
-    return  matcher.matches();
+    Matcher matcher = pattern.matcher(email);
+    return matcher.matches();
   }
 
   // Verify validity of contact number
@@ -111,9 +139,7 @@ public class CustomerService {
     String regex = "[0-9]{10}";
     Pattern pattern = Pattern.compile(regex);
     Matcher matcher = pattern.matcher(contact);
-    if (matcher.find() && matcher.group().equals(contact))
-      return true;
-    return false;
+    return matcher.find() && matcher.group().equals(contact);
   }
 
   // Verify validity of password

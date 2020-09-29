@@ -4,13 +4,16 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8_VALUE;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 import com.upgrad.FoodOrderingApp.api.model.LoginResponse;
+import com.upgrad.FoodOrderingApp.api.model.LogoutResponse;
 import com.upgrad.FoodOrderingApp.api.model.SignupCustomerRequest;
 import com.upgrad.FoodOrderingApp.api.model.SignupCustomerResponse;
 import com.upgrad.FoodOrderingApp.api.provider.BasicAuthDecoder;
+import com.upgrad.FoodOrderingApp.api.provider.BearerAuthDecoder;
 import com.upgrad.FoodOrderingApp.service.businness.CustomerService;
 import com.upgrad.FoodOrderingApp.service.entity.CustomerAuthEntity;
 import com.upgrad.FoodOrderingApp.service.entity.CustomerEntity;
 import com.upgrad.FoodOrderingApp.service.exception.AuthenticationFailedException;
+import com.upgrad.FoodOrderingApp.service.exception.AuthorizationFailedException;
 import com.upgrad.FoodOrderingApp.service.exception.SignUpRestrictedException;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -82,6 +85,22 @@ public class CustomerController {
     return new ResponseEntity<LoginResponse>(loginResponse, httpHeaders, HttpStatus.OK);
   }
 
+  @CrossOrigin
+  @RequestMapping(method = POST, path = "/customer/logout", produces = APPLICATION_JSON_UTF8_VALUE)
+  public ResponseEntity<LogoutResponse> logout(
+      @RequestHeader("authorization") final String authorization)
+      throws AuthorizationFailedException {
+    // Get the access-token from the authorization header (Bearer token)
+    BearerAuthDecoder bearerAuthDecoder = new BearerAuthDecoder(authorization);
+    final String accessToken = bearerAuthDecoder.getAccessToken();
+    // Given access-token, logout the corresponding customer
+    CustomerAuthEntity loggedOutCustomerAuth = customerService.logout(accessToken);
+    // Generate the reponse of successful logout
+    LogoutResponse logoutResponse = new LogoutResponse()
+        .id(loggedOutCustomerAuth.getCustomer().getUuid())
+        .message("LOGGED OUT SUCCESSFULLY");
+    return new ResponseEntity<LogoutResponse>(logoutResponse, HttpStatus.OK);
+  }
 
   // Verifies if the input fields aren't empty
   private boolean fieldsComplete(CustomerEntity customer) throws SignUpRestrictedException {
