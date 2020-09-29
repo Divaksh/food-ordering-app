@@ -10,6 +10,8 @@ import com.upgrad.FoodOrderingApp.api.model.SignupCustomerRequest;
 import com.upgrad.FoodOrderingApp.api.model.SignupCustomerResponse;
 import com.upgrad.FoodOrderingApp.api.model.UpdateCustomerRequest;
 import com.upgrad.FoodOrderingApp.api.model.UpdateCustomerResponse;
+import com.upgrad.FoodOrderingApp.api.model.UpdatePasswordRequest;
+import com.upgrad.FoodOrderingApp.api.model.UpdatePasswordResponse;
 import com.upgrad.FoodOrderingApp.api.provider.BasicAuthDecoder;
 import com.upgrad.FoodOrderingApp.api.provider.BearerAuthDecoder;
 import com.upgrad.FoodOrderingApp.service.businness.CustomerService;
@@ -135,6 +137,33 @@ public class CustomerController {
     return new ResponseEntity<UpdateCustomerResponse>(updateCustomerResponse, HttpStatus.OK);
   }
 
+  @CrossOrigin
+  @RequestMapping(method = PUT, path = "/customer/password", consumes = APPLICATION_JSON_UTF8_VALUE, produces = APPLICATION_JSON_UTF8_VALUE)
+  public ResponseEntity<UpdatePasswordResponse> updatePassword(
+      @RequestHeader("authorization") final String authorization,
+      @RequestBody(required = false) final UpdatePasswordRequest updatePasswordRequest)
+      throws AuthorizationFailedException, UpdateCustomerException {
+    // Get access-token from authorization header
+    BearerAuthDecoder bearerAuthDecoder = new BearerAuthDecoder(authorization);
+    final String accessToken = bearerAuthDecoder.getAccessToken();
+    // get the old and new passwords from the request body
+    final String oldPassword = updatePasswordRequest.getOldPassword();
+    final String newPassword = updatePasswordRequest.getNewPassword();
+    // Check if both the input parameters aren't empty, and accordingly raise an exception
+    if (oldPassword == "" || newPassword == "") {
+      throw new UpdateCustomerException("UCR-003", "No field should be empty");
+    }
+    // Get customer based on access-token
+    CustomerEntity customer = customerService.getCustomer(accessToken);
+    // Update customer's password
+    CustomerEntity updatedCustomer = customerService
+        .updateCustomerPassword(oldPassword, newPassword, customer);
+    // Generate response if password successfully updated
+    UpdatePasswordResponse updatePasswordResponse = new UpdatePasswordResponse()
+        .id(updatedCustomer.getUuid())
+        .status("CUSTOMER PASSWORD UPDATED SUCCESSFULLY");
+    return new ResponseEntity<UpdatePasswordResponse>(updatePasswordResponse, HttpStatus.OK);
+  }
 
   // Verifies if the input fields aren't empty
   private boolean fieldsComplete(CustomerEntity customer) throws SignUpRestrictedException {

@@ -150,6 +150,26 @@ public class CustomerService {
     return customerAuth.getCustomer();
   }
 
+  @Transactional(propagation = Propagation.REQUIRED)
+  public CustomerEntity updateCustomerPassword(final String oldPassword, final String newPassword,
+      final CustomerEntity customer) throws AuthorizationFailedException, UpdateCustomerException {
+    // Update customer password in the database
+    if (!validPassword(newPassword)) {
+      throw new UpdateCustomerException("UCR-001", "Weak password!");
+    }
+
+    String encryptedOldPassword = PasswordCryptographyProvider
+        .encrypt(oldPassword, customer.getSalt());
+    if (!encryptedOldPassword.equals(customer.getPassword())) {
+      throw new UpdateCustomerException("UCR-004", "Incorrect old password!");
+    }
+
+    customer.setPassword(newPassword);
+    encryptPassword(customer);
+    CustomerEntity updatedCustomer = customerDao.updatePassword(customer);
+    return updatedCustomer;
+  }
+
   // Verify if all fields are provided with values
   private boolean fieldsComplete(CustomerEntity customer) throws SignUpRestrictedException {
     return !customer.getFirstName().isEmpty() &&
