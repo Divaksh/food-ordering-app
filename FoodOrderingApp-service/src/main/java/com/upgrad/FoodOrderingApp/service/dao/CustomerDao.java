@@ -39,4 +39,12 @@ public class CustomerDao {
     return customer;
   }
 
+  public CustomerEntity getCustomerByUUID(String uuid) {
+    try {
+      return entityManager.createNamedQuery("customerByUUID", CustomerEntity.class)
+          .setParameter("uuid", uuid).getSingleResult();
+    } catch (NoResultException nre) {
+      return null;
+    }
+  }
 }
