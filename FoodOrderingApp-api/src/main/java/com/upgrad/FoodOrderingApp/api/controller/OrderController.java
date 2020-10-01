@@ -2,6 +2,7 @@ package com.upgrad.FoodOrderingApp.api.controller;
 
 import com.upgrad.FoodOrderingApp.api.model.CouponDetailsResponse;
 import com.upgrad.FoodOrderingApp.api.model.CustomerOrderResponse;
+import com.upgrad.FoodOrderingApp.api.model.ItemQuantity;
 import com.upgrad.FoodOrderingApp.api.model.ItemQuantityResponse;
 import com.upgrad.FoodOrderingApp.api.model.ItemQuantityResponseItem;
 import com.upgrad.FoodOrderingApp.api.model.OrderList;
@@ -10,16 +11,26 @@ import com.upgrad.FoodOrderingApp.api.model.OrderListAddressState;
 import com.upgrad.FoodOrderingApp.api.model.OrderListCoupon;
 import com.upgrad.FoodOrderingApp.api.model.OrderListCustomer;
 import com.upgrad.FoodOrderingApp.api.model.OrderListPayment;
+import com.upgrad.FoodOrderingApp.api.model.SaveOrderRequest;
+import com.upgrad.FoodOrderingApp.api.model.SaveOrderResponse;
+import com.upgrad.FoodOrderingApp.service.businness.AddressService;
 import com.upgrad.FoodOrderingApp.service.businness.CustomerService;
 import com.upgrad.FoodOrderingApp.service.businness.ItemService;
 import com.upgrad.FoodOrderingApp.service.businness.OrderService;
+import com.upgrad.FoodOrderingApp.service.businness.PaymentService;
+import com.upgrad.FoodOrderingApp.service.businness.RestaurantService;
 import com.upgrad.FoodOrderingApp.service.entity.CouponEntity;
 import com.upgrad.FoodOrderingApp.service.entity.CustomerEntity;
 import com.upgrad.FoodOrderingApp.service.entity.OrderEntity;
 import com.upgrad.FoodOrderingApp.service.entity.OrderItemEntity;
+import com.upgrad.FoodOrderingApp.service.exception.AddressNotFoundException;
 import com.upgrad.FoodOrderingApp.service.exception.AuthorizationFailedException;
 import com.upgrad.FoodOrderingApp.service.exception.CouponNotFoundException;
+import com.upgrad.FoodOrderingApp.service.exception.ItemNotFoundException;
+import com.upgrad.FoodOrderingApp.service.exception.PaymentMethodNotFoundException;
+import com.upgrad.FoodOrderingApp.service.exception.RestaurantNotFoundException;
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +39,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -45,6 +57,16 @@ public class OrderController {
 
   @Autowired
   private ItemService itemService;
+
+  @Autowired
+  private PaymentService paymentService;
+
+  @Autowired
+  private AddressService addressService;
+
+  @Autowired
+  private RestaurantService restaurantService;
+
 
   // Method that implements the endpoint to get coupon name
   @CrossOrigin
@@ -142,5 +164,47 @@ public class OrderController {
     }
 
     return new ResponseEntity<CustomerOrderResponse>(customerOrderResponse, HttpStatus.OK);
+  }
+
+  //Method to implement the endpoint to save customer orders
+  @CrossOrigin
+  @RequestMapping(method = RequestMethod.POST, path = "/order", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+  public ResponseEntity<SaveOrderResponse> saveOrder(
+      @RequestBody(required = false) final SaveOrderRequest saveOrderRequest,
+      @RequestHeader("authorization") String authorization)
+      throws AuthorizationFailedException, PaymentMethodNotFoundException, RestaurantNotFoundException,
+      ItemNotFoundException, CouponNotFoundException, AddressNotFoundException {
+
+    String accessToken = authorization.split("Bearer ")[1];
+    CustomerEntity customerEntity = customerService.getCustomer(accessToken);
+
+    final OrderEntity orderEntity = new OrderEntity();
+    orderEntity.setUuid(UUID.randomUUID().toString());
+    orderEntity
+        .setCoupon(orderService.getCouponByCouponId(saveOrderRequest.getCouponId().toString()));
+    orderEntity
+        .setPayment(paymentService.getPaymentByUUID(saveOrderRequest.getPaymentId().toString()));
+    orderEntity.setCustomer(customerEntity);
+    orderEntity.setAddress(
+        addressService.getAddressByUUID(saveOrderRequest.getAddressId(), customerEntity));
+    orderEntity.setBill(saveOrderRequest.getBill().doubleValue());
+    orderEntity.setDiscount(saveOrderRequest.getDiscount().doubleValue());
+    orderEntity.setRestaurant(
+        restaurantService.restaurantByUUID(saveOrderRequest.getRestaurantId().toString()));
+    orderEntity.setDate(new Date());
+    OrderEntity savedOrderEntity = orderService.saveOrder(orderEntity);
+
+    for (ItemQuantity itemQuantity : saveOrderRequest.getItemQuantities()) {
+      OrderItemEntity orderItemEntity = new OrderItemEntity();
+      orderItemEntity.setOrderId(savedOrderEntity);
+      orderItemEntity.setItemId(itemService.getItemByUUID(itemQuantity.getItemId().toString()));
+      orderItemEntity.setQuantity(itemQuantity.getQuantity());
+      orderItemEntity.setPrice(itemQuantity.getPrice());
+      orderService.saveOrderItem(orderItemEntity);
+    }
+
+    SaveOrderResponse saveOrderResponse = new SaveOrderResponse()
+        .id(savedOrderEntity.getUuid()).status("ORDER SUCCESSFULLY PLACED");
+    return new ResponseEntity<SaveOrderResponse>(saveOrderResponse, HttpStatus.CREATED);
   }
 }

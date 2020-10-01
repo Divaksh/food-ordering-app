@@ -3,11 +3,13 @@ package com.upgrad.FoodOrderingApp.service.dao;
 import com.upgrad.FoodOrderingApp.service.entity.CouponEntity;
 import com.upgrad.FoodOrderingApp.service.entity.CustomerEntity;
 import com.upgrad.FoodOrderingApp.service.entity.OrderEntity;
+import com.upgrad.FoodOrderingApp.service.entity.OrderItemEntity;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 public class OrderDao {
@@ -34,6 +36,19 @@ public class OrderDao {
     } catch (NoResultException nre) {
       return null;
     }
+  }
+
+
+  @Transactional
+  public OrderEntity createNewOrder(OrderEntity order) {
+    entityManager.persist(order);
+    return order;
+  }
+
+  @Transactional
+  public OrderItemEntity createNewOrderItem(OrderItemEntity orderItemEntity) {
+    entityManager.persist(orderItemEntity);
+    return orderItemEntity;
   }
 
 }
