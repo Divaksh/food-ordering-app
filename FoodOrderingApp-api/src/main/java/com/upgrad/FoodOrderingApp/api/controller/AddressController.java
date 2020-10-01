@@ -1,12 +1,14 @@
 package com.upgrad.FoodOrderingApp.api.controller;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8_VALUE;
+import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 import com.upgrad.FoodOrderingApp.api.model.AddressList;
 import com.upgrad.FoodOrderingApp.api.model.AddressListResponse;
 import com.upgrad.FoodOrderingApp.api.model.AddressListState;
+import com.upgrad.FoodOrderingApp.api.model.DeleteAddressResponse;
 import com.upgrad.FoodOrderingApp.api.model.SaveAddressRequest;
 import com.upgrad.FoodOrderingApp.api.model.SaveAddressResponse;
 import com.upgrad.FoodOrderingApp.api.provider.BearerAuthDecoder;
@@ -27,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -109,5 +112,29 @@ public class AddressController {
     return new ResponseEntity<AddressListResponse>(addressListResponse, HttpStatus.OK);
 
   }
+
+
+  @CrossOrigin
+  @RequestMapping(method = DELETE, path = "/address/{address_id}", produces = APPLICATION_JSON_UTF8_VALUE)
+  public ResponseEntity<DeleteAddressResponse> deleteAddress(
+      @RequestHeader("authorization") final String authorization,
+      @PathVariable(value = "address_id") final String addressId)
+      throws AuthorizationFailedException, AddressNotFoundException {
+    //Gets the access-token from the authorization header
+    BearerAuthDecoder bearerAuthDecoder = new BearerAuthDecoder(authorization);
+    final String accessToken = bearerAuthDecoder.getAccessToken();
+    // Gets customer entity from access token
+    CustomerEntity customer = customerService.getCustomer(accessToken);
+    // Fetches address given address UUID
+    AddressEntity address = addressService.getAddressByUUID(addressId, customer);
+    // If address present, deletes the corresponding address
+    AddressEntity deletedAddress = addressService.deleteAddress(address);
+    // Generates the corresponding response
+    DeleteAddressResponse deleteAddressResponse = new DeleteAddressResponse()
+        .id(UUID.fromString(deletedAddress.getUuid()))
+        .status("ADDRESS DELETED SUCCESSFULLY");
+    return new ResponseEntity<DeleteAddressResponse>(deleteAddressResponse, HttpStatus.OK);
+  }
+
 
 }
