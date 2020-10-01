@@ -12,26 +12,27 @@ import org.springframework.transaction.annotation.Transactional;
 @Repository
 public class StateDao {
 
-    @PersistenceContext
-    private EntityManager entityManager;
+  @PersistenceContext
+  private EntityManager entityManager;
 
-    @Transactional(propagation = Propagation.REQUIRED)
-    public StateEntity findStateByUUID(final String uuid) {
-        try {
-            StateEntity state = entityManager.createNamedQuery("stateByUUID", StateEntity.class)
-                    .setParameter("uuid", uuid).getSingleResult();
-            return state;
-        } catch (NoResultException nre) {
-            return null;
-        }
+  @Transactional(propagation = Propagation.REQUIRED)
+  public StateEntity findStateByUUID(final String uuid) {
+    try {
+      StateEntity state = entityManager.createNamedQuery("stateByUUID", StateEntity.class)
+          .setParameter("uuid", uuid).getSingleResult();
+      return state;
+    } catch (NoResultException nre) {
+      return null;
     }
+  }
 
-    public List<StateEntity> getAllStates() {
-        try {
-            List<StateEntity> states = entityManager.createNamedQuery("getAllStates", StateEntity.class).getResultList();
-            return states;
-        } catch (NoResultException nre) {
-            return null;
-        }
+  public List<StateEntity> getAllStates() {
+    try {
+      List<StateEntity> states = entityManager.createNamedQuery("getAllStates", StateEntity.class)
+          .getResultList();
+      return states;
+    } catch (NoResultException nre) {
+      return null;
     }
+  }
 }

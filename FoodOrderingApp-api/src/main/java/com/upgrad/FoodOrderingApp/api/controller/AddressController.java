@@ -11,6 +11,8 @@ import com.upgrad.FoodOrderingApp.api.model.AddressListState;
 import com.upgrad.FoodOrderingApp.api.model.DeleteAddressResponse;
 import com.upgrad.FoodOrderingApp.api.model.SaveAddressRequest;
 import com.upgrad.FoodOrderingApp.api.model.SaveAddressResponse;
+import com.upgrad.FoodOrderingApp.api.model.StatesList;
+import com.upgrad.FoodOrderingApp.api.model.StatesListResponse;
 import com.upgrad.FoodOrderingApp.api.provider.BearerAuthDecoder;
 import com.upgrad.FoodOrderingApp.service.businness.AddressService;
 import com.upgrad.FoodOrderingApp.service.businness.CustomerService;
@@ -136,5 +138,24 @@ public class AddressController {
     return new ResponseEntity<DeleteAddressResponse>(deleteAddressResponse, HttpStatus.OK);
   }
 
+  @RequestMapping(method = GET, path = "/states", produces = APPLICATION_JSON_UTF8_VALUE)
+  public ResponseEntity<StatesListResponse> getAllStates() {
+    // Gets all states from the database
+    List<StateEntity> states = addressService.getAllStates();
+    // Formulates the StatesListResponse
+    if (!states.isEmpty()) {
+      List<StatesList> statesList = new LinkedList<>();
+      states.forEach(state -> {
+        StatesList stateList = new StatesList();
+        stateList.setId(UUID.fromString(state.getUuid()));
+        stateList.setStateName(state.getStateName());
 
+        statesList.add(stateList);
+      });
+      StatesListResponse statesListResponse = new StatesListResponse().states(statesList);
+      return new ResponseEntity<StatesListResponse>(statesListResponse, HttpStatus.OK);
+    } else {
+      return new ResponseEntity<StatesListResponse>(new StatesListResponse(), HttpStatus.OK);
+    }
+  }
 }

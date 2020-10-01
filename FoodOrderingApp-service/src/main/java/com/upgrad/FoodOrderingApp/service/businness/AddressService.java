@@ -123,6 +123,10 @@ public class AddressService {
     return deletedAddress;
   }
 
-
+  public List<StateEntity> getAllStates() {
+    // fetches all the states from the DB
+    List<StateEntity> states = stateDao.getAllStates();
+    return states;
+  }
 }
 
