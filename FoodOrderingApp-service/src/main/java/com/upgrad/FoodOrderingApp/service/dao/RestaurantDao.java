@@ -21,6 +21,12 @@ public class RestaurantDao {
         List<RestaurantEntity> restaurantEntities = entityManager.createNamedQuery("getAllRestaurantsByRating", RestaurantEntity.class).getResultList();
         return restaurantEntities;
     }
+
+    public RestaurantEntity updateRestaurantEntity(RestaurantEntity restaurantEntity){
+        entityManager.merge(restaurantEntity);
+        return  restaurantEntity;
+    }
+
     //This method queries DB to get the single restaurant from DB
     //Restaurant details are returned as per the input parameter restaurant uuid
 
