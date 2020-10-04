@@ -14,17 +14,25 @@ public class RestaurantDao {
     @PersistenceContext
     private EntityManager entityManager;
 
+
+
+    public RestaurantEntity getRestaurantById(String restaurantId) {
+        try {
+            RestaurantEntity restaurantEntity = entityManager.createNamedQuery("restaurantById", RestaurantEntity.class)
+                    .setParameter("restaurantId", restaurantId)
+                    .getSingleResult();
+            return restaurantEntity;
+        }catch (NoResultException nre){
+            return null;
+        }
+    }
+
     //This method queries DB to get all the restaurants from DB
     //Restaurant List is returned as per the restaurant ratings
 
     public List<RestaurantEntity> getAllRestaurantsByRating(){
         List<RestaurantEntity> restaurantEntities = entityManager.createNamedQuery("getAllRestaurantsByRating", RestaurantEntity.class).getResultList();
         return restaurantEntities;
-    }
-
-    public RestaurantEntity updateRestaurantEntity(RestaurantEntity restaurantEntity){
-        entityManager.merge(restaurantEntity);
-        return  restaurantEntity;
     }
 
     //This method queries DB to get the single restaurant from DB
@@ -37,4 +45,10 @@ public class RestaurantDao {
             return null;
         }
     }
+
+    public RestaurantEntity updateRestaurantEntity(RestaurantEntity restaurantEntity){
+        entityManager.merge(restaurantEntity);
+        return  restaurantEntity;
+    }
+
 }
