@@ -9,10 +9,9 @@ public class BearerAuthDecoder {
 
     public BearerAuthDecoder(final String bearerToken) throws AuthorizationFailedException {
         final String[] bearerTokens = bearerToken.split(BEARER_AUTH_PREFIX);
-        if(bearerTokens.length == 2) {
+        if (bearerTokens.length == 2) {
             this.accessToken = bearerTokens[1];
-        }
-        else {
+        } else {
             this.accessToken = bearerToken;
         }
 
