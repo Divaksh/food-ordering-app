@@ -157,6 +157,7 @@ public class AddressController {
    *
    * @return ResponseEntity<StatesListResponse> type object along with HttpStatus OK
    */
+  @CrossOrigin
   @RequestMapping(method = GET, path = "/states", produces = APPLICATION_JSON_UTF8_VALUE)
   public ResponseEntity<StatesListResponse> getAllStates() {
     // Gets all states from the database

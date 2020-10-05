@@ -105,6 +105,7 @@ public class CustomerController {
         .message("LOGGED IN SUCCESSFULLY");
     HttpHeaders httpHeaders = new HttpHeaders();
     httpHeaders.add("access-token", authorizedCustomer.getAccessToken());
+    httpHeaders.add("Access-Control-Expose-Headers", "*");
     return new ResponseEntity<LoginResponse>(loginResponse, httpHeaders, HttpStatus.OK);
   }
 
