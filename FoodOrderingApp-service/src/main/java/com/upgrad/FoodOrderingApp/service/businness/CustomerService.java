@@ -30,6 +30,13 @@ public class CustomerService {
   @Autowired
   private CustomerAuthDao customerAuthDao;
 
+  /**
+   * This method implements the logic for 'signup' endpoint.
+   *
+   * @param newCustomer for creating new customer.
+   * @return CustomerEntity object.
+   * @throws SignUpRestrictedException if any of the validation fails.
+   */
   @Transactional(propagation = Propagation.REQUIRED)
   public CustomerEntity saveCustomer(CustomerEntity newCustomer) throws SignUpRestrictedException {
     // Finds customer based on contact number
@@ -61,9 +68,16 @@ public class CustomerService {
     encryptPassword(newCustomer);
     // Save customer details in the database
     return customerDao.createCustomer(newCustomer);
-
   }
 
+  /**
+   * This method implements the logic for 'login' endpoint.
+   *
+   * @param username customers contactnumber will be the username.
+   * @param password customers password.
+   * @return CustomerAuthEntity object.
+   * @throws AuthenticationFailedException if any of the validation fails.
+   */
   @Transactional(propagation = Propagation.REQUIRED)
   public CustomerAuthEntity authenticate(final String username, final String password)
       throws AuthenticationFailedException {
@@ -94,6 +108,13 @@ public class CustomerService {
     }
   }
 
+  /**
+   * This method implements the logic for 'logout' endpoint.
+   *
+   * @param accessToken Customers access token in 'Bearer <access-token>' format.
+   * @return Updated CustomerAuthEntity object.
+   * @throws AuthorizationFailedException if any of the validation fails on customer authorization.
+   */
   @Transactional(propagation = Propagation.REQUIRED)
   public CustomerAuthEntity logout(final String accessToken) throws AuthorizationFailedException {
     final ZonedDateTime now;
@@ -121,6 +142,12 @@ public class CustomerService {
     return loggedOutCustomerAuth;
   }
 
+  /**
+   * This method updates the customer details in database.
+   *
+   * @param customer CustomerEntity object to update.
+   * @return Updated CustomerEntity object.
+   */
   @Transactional(propagation = Propagation.REQUIRED)
   public CustomerEntity updateCustomer(final CustomerEntity customer)
       throws AuthorizationFailedException, UpdateCustomerException {
@@ -129,6 +156,13 @@ public class CustomerService {
     return updatedCustomer;
   }
 
+  /**
+   * This method checks if the token is valid.
+   *
+   * @param accessToken Takes access-token as input which is obtained during successful login.
+   * @return CustomerEntity - Customer who obtained this access-token during his login.
+   * @throws AuthorizationFailedException Based on token validity.
+   */
   @Transactional(propagation = Propagation.REQUIRED)
   public CustomerEntity getCustomer(final String accessToken) throws AuthorizationFailedException {
     // Get the customer details based on access token
@@ -152,6 +186,15 @@ public class CustomerService {
     return customerAuth.getCustomer();
   }
 
+  /**
+   * This method updates password of the given customer.
+   *
+   * @param oldPassword Customer's old password.
+   * @param newPassword Customer's new password.
+   * @param customer    CustomerEntity object to update the password.
+   * @return Updated CustomerEntity object.
+   * @throws UpdateCustomerException If any of the validation for old or new password fails.
+   */
   @Transactional(propagation = Propagation.REQUIRED)
   public CustomerEntity updateCustomerPassword(final String oldPassword, final String newPassword,
       final CustomerEntity customer) throws AuthorizationFailedException, UpdateCustomerException {

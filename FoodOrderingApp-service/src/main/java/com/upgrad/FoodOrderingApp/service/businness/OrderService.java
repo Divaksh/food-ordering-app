@@ -25,8 +25,13 @@ public class OrderService {
   @Autowired
   private CustomerDao customerDao;
 
-  //Service method to get an instance of the Coupon Entity when Coupon name is provided
-
+  /**
+   * This method contains business logic to get coupon details by coupon name.
+   *
+   * @param couponName
+   * @return instance of the Coupon Entity when Coupon name is provided
+   * @throws CouponNotFoundException if coupon with that name doesn't exist in database.
+   */
   public CouponEntity getCouponByCouponName(String couponName) throws CouponNotFoundException {
 
     if (couponName.equals("")) {
@@ -42,15 +47,26 @@ public class OrderService {
     return couponEntity;
   }
 
-  // Service method to get the customer orders given customer UUID
+  /**
+   * Fetches the orders of the customer in a sorted manner with latest order being on the top.
+   *
+   * @param customerUUID customer whose orders are to be fetched.
+   * @return list of orders made by customer
+   */
   public List<OrderEntity> getOrdersByCustomers(String customerUUID) {
     return orderDao.getOrdersByCustomers(customerDao.getCustomerByUUID(customerUUID));
   }
 
-  //Service method to get an instance of the Coupon Entity when Coupon UUID is provided
-  public CouponEntity getCouponByCouponId(String uuid) throws CouponNotFoundException {
+  /**
+   * This method contains business logic to get coupon details by coupon id.
+   *
+   * @param couponUUID
+   * @return instance of the Coupon Entity
+   * @throws CouponNotFoundException if coupon with that id doesn't exist in database.
+   */
+  public CouponEntity getCouponByCouponId(String couponUUID) throws CouponNotFoundException {
 
-    CouponEntity coupon = couponDao.getCouponByUUID(uuid);
+    CouponEntity coupon = couponDao.getCouponByUUID(couponUUID);
     if (coupon == null) {
       throw new CouponNotFoundException("CPF-002", "No coupon by this id");
     }
@@ -58,14 +74,24 @@ public class OrderService {
     return coupon;
   }
 
-  // Service Method to save the order
+  /**
+   * Persists the order in the database.
+   *
+   * @param order Order to be persisted.
+   * @return Persisted order.
+   */
   @Transactional(propagation = Propagation.REQUIRED)
   public OrderEntity saveOrder(OrderEntity order) {
     OrderEntity newOrder = orderDao.createNewOrder(order);
     return newOrder;
   }
 
-  //Service method to save individual order items
+  /**
+   * Persists the Order Item.
+   *
+   * @param orderItemEntity Order Item to be persisted.
+   * @return persisted order item.
+   */
   public OrderItemEntity saveOrderItem(OrderItemEntity orderItemEntity) {
     OrderItemEntity newOrderItemEntity = orderDao.createNewOrderItem(orderItemEntity);
     return newOrderItemEntity;

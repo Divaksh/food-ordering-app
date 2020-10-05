@@ -31,8 +31,13 @@ public class AddressService {
   @Autowired
   private StateDao stateDao;
 
-  //Service Class method that is called to get the Address entity when the Address UUID is passed
-
+  /**
+   * Returns state for a given UUID
+   *
+   * @param stateUUID UUID of the state entity
+   * @return StateEntity object.
+   * @throws AddressNotFoundException If given uuid does not exist in database.
+   */
   public StateEntity getStateByUUID(final String stateUUID) throws AddressNotFoundException {
 
     StateEntity state = stateDao.findStateByUUID(stateUUID);
@@ -42,6 +47,14 @@ public class AddressService {
     return state;
   }
 
+  /**
+   * This method implements the logic for 'saving the address' endpoint.
+   *
+   * @param address new address will be created from given AddressEntity object.
+   * @param state   saves the address of the given customer.
+   * @return AddressEntity object.
+   * @throws SaveAddressException exception if any of the validation fails on customer details.
+   */
   @Transactional(propagation = Propagation.REQUIRED)
   public AddressEntity saveAddress(AddressEntity address, StateEntity state)
       throws AddressNotFoundException, SaveAddressException {
@@ -67,6 +80,12 @@ public class AddressService {
     return createdCustomerAddress;
   }
 
+  /**
+   * Returns all the addresses of a given customer.
+   *
+   * @param customer Customer whose addresses are to be returned.
+   * @return List<AddressEntity> object.
+   */
   public List<AddressEntity> getAllAddress(CustomerEntity customer) {
     // Gets list of addresses based on customer entity
     List<AddressEntity> addressEntities = new LinkedList<>();
@@ -95,6 +114,15 @@ public class AddressService {
 
   }
 
+  /**
+   * This method implements logic for getting the Address using address uuid.
+   *
+   * @param addressId Address UUID.
+   * @param customer  Customer whose addresses has to be fetched.
+   * @return AddressEntity object.
+   * @throws AddressNotFoundException     If any validation on address fails.
+   * @throws AuthorizationFailedException If any validation on customer fails.
+   */
   public AddressEntity getAddressByUUID(final String addressId, final CustomerEntity customer)
       throws AddressNotFoundException, AuthorizationFailedException {
 
@@ -116,6 +144,12 @@ public class AddressService {
     return address;
   }
 
+  /**
+   * Deletes given address from database if no orders placed using the given address.
+   *
+   * @param addressEntity Address to delete.
+   * @return AddressEntity type object.
+   */
   @Transactional(propagation = Propagation.REQUIRED)
   public AddressEntity deleteAddress(final AddressEntity addressEntity) {
     // Deletes the corresponding address from the database
@@ -123,10 +157,14 @@ public class AddressService {
     return deletedAddress;
   }
 
+  /**
+   * This method implements the logic to get All the States from database.
+   *
+   * @return List<StateEntity> object.
+   */
   public List<StateEntity> getAllStates() {
     // fetches all the states from the DB
     List<StateEntity> states = stateDao.getAllStates();
     return states;
   }
 }
-

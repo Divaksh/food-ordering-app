@@ -38,6 +38,14 @@ public class CustomerController {
   @Autowired
   private CustomerService customerService;
 
+  /**
+   * This api endpoint is used to signup a new customer
+   *
+   * @param signupCustomerRequest this argument contains all the attributes required for creating a
+   *                              new customer in the database.
+   * @return ResponseEntity<SignupCustomerResponse> type object along with HttpStatus CREATED.
+   * @throws SignUpRestrictedException if customer entered details not meet the requirements.
+   */
   @CrossOrigin
   @RequestMapping(method = POST, path = "/customer/signup", consumes = APPLICATION_JSON_UTF8_VALUE, produces = APPLICATION_JSON_UTF8_VALUE)
   public ResponseEntity<SignupCustomerResponse> signup(
@@ -67,6 +75,14 @@ public class CustomerController {
 
   }
 
+  /**
+   * This api endpoint is used to login the customer.
+   *
+   * @param authorization customer contactNumber and password in 'Basic Base64<contactNumber:password>'
+   *                      format.
+   * @return ResponseEntity<LoginResponse> type object with HttpStatus as OK.
+   * @throws AuthenticationFailedException if customer contactNumber or password is wrong.
+   */
   @CrossOrigin
   @RequestMapping(method = POST, path = "/customer/login", produces = APPLICATION_JSON_UTF8_VALUE)
   public ResponseEntity<LoginResponse> login(
@@ -92,6 +108,13 @@ public class CustomerController {
     return new ResponseEntity<LoginResponse>(loginResponse, httpHeaders, HttpStatus.OK);
   }
 
+  /**
+   * This api endpoint is used to logout the customer.
+   *
+   * @param authorization is the access token of the customer in 'Bearer <access-token>' format.
+   * @return ResponseEntity<LogoutResponse> type object along with HttpStatus as OK.
+   * @throws AuthorizationFailedException if any of the validation on customer access token fails.
+   */
   @CrossOrigin
   @RequestMapping(method = POST, path = "/customer/logout", produces = APPLICATION_JSON_UTF8_VALUE)
   public ResponseEntity<LogoutResponse> logout(
@@ -109,6 +132,17 @@ public class CustomerController {
     return new ResponseEntity<LogoutResponse>(logoutResponse, HttpStatus.OK);
   }
 
+  /**
+   * This api endpoint is used to update customer details.
+   *
+   * @param updateCustomerRequest this argument contains all the attributes required to update a
+   *                              customer in the database.
+   * @param authorization         customers access token in 'Bearer <access-token>' format.
+   * @return ResponseEntity<UpdateCustomerResponse> type object along with HttpStatus as OK.
+   * @throws AuthorizationFailedException if any validation on customer access token fails.
+   * @throws UpdateCustomerException      if first name is not provided in updateCustomerRequest
+   *                                      param.
+   */
   @CrossOrigin
   @RequestMapping(method = PUT, path = "/customer", consumes = APPLICATION_JSON_UTF8_VALUE, produces = APPLICATION_JSON_UTF8_VALUE)
   public ResponseEntity<UpdateCustomerResponse> updateCustomer(
@@ -138,6 +172,14 @@ public class CustomerController {
     return new ResponseEntity<UpdateCustomerResponse>(updateCustomerResponse, HttpStatus.OK);
   }
 
+  /**
+   * @param updatePasswordRequest this argument contains all the attributes required to update a
+   *                              customer's password in the database.
+   * @param authorization         customer access token in 'Bearer <access-token>' format.
+   * @return ResponseEntity<UpdatePasswordResponse> type object along with HttpStatus as OK.
+   * @throws AuthorizationFailedException if any of the validation on customer access token fails.
+   * @throws UpdateCustomerException      if old or new password fields are empty.
+   */
   @CrossOrigin
   @RequestMapping(method = PUT, path = "/customer/password", consumes = APPLICATION_JSON_UTF8_VALUE, produces = APPLICATION_JSON_UTF8_VALUE)
   public ResponseEntity<UpdatePasswordResponse> updatePassword(

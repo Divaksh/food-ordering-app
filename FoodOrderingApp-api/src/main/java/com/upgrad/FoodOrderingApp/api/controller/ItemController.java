@@ -29,9 +29,14 @@ public class ItemController {
   @Autowired
   private RestaurantService restaurantService;
 
-  //This end point returns top 5 items by populatity of a restaurant
-  //It takes restaurant Id as input param..and genetates ResponseEntity<ItemListResponse> type object along with HttpStatus
-
+  /**
+   * This method gets top five popular items of a restaurant based on number of times it is
+   * ordered.
+   *
+   * @param restaurantId UUID for the restaurant
+   * @return ItemListResponse
+   * @throws RestaurantNotFoundException If restaurant with UUID doesn't exist in the database
+   */
   @CrossOrigin
   @RequestMapping(method = RequestMethod.GET, path = "/item/restaurant/{restaurant_id}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
   public ResponseEntity<ItemListResponse> getItemsByPopularity(
@@ -60,11 +65,7 @@ public class ItemController {
         break;
       }
     }
-
     //Sending response with the desired body and required status code.
-
     return new ResponseEntity<ItemListResponse>(itemListResponse, HttpStatus.OK);
-
   }
-
 }

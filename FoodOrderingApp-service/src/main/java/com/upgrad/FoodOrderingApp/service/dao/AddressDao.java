@@ -16,12 +16,23 @@ public class AddressDao {
   @PersistenceContext
   private EntityManager entityManager;
 
+  /**
+   * Creates the address entity using the given AddressEntity.
+   *
+   * @param address contains the address details.
+   * @return AddressEntity object.
+   */
   public AddressEntity saveAddress(final AddressEntity address) {
     entityManager.persist(address);
     return address;
   }
 
-
+  /**
+   * This method fetches all the addresses of a given customer.
+   *
+   * @param customer whose detals to be fetched.
+   * @return List of CustomerAddressEntity type object.
+   */
   public List<CustomerAddressEntity> getAddressesByCustomer(CustomerEntity customer) {
     try {
       List<CustomerAddressEntity> customerAddressEntities = entityManager
@@ -33,6 +44,13 @@ public class AddressDao {
     }
   }
 
+
+  /**
+   * This method fetches the address from Database based on address UUID.
+   *
+   * @param addressId UUID of the address to be fetched.
+   * @return AddressEntity
+   */
   public AddressEntity getAddressByAddressId(final String addressId) {
     try {
       AddressEntity address = entityManager.createNamedQuery("addressById", AddressEntity.class)
@@ -43,6 +61,12 @@ public class AddressDao {
     }
   }
 
+  /**
+   * Deletes the given address entity.
+   *
+   * @param address Address to delete from database.
+   * @return AddressEntity object.
+   */
   public AddressEntity deleteAddress(final AddressEntity address) {
     entityManager.remove(address);
     return address;

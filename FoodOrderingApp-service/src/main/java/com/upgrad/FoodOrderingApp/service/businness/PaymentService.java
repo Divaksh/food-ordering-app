@@ -13,7 +13,12 @@ public class PaymentService {
   @Autowired
   private PaymentDao paymentDao;
 
-  //Method called to fetch the payment entity given the payment id
+  /**
+   * This method gets the payment record from database based on the UUID.
+   *
+   * @param paymentId UUID of the payment that is to be fetched
+   * @return the payment entity given the payment id
+   */
   public PaymentEntity getPaymentByUUID(String paymentId) throws PaymentMethodNotFoundException {
     PaymentEntity paymentEntity = paymentDao.getPayment(paymentId);
     if (paymentEntity == null) {
@@ -23,7 +28,11 @@ public class PaymentService {
     }
   }
 
-  //Method called to get all the payment methods
+  /**
+   * This method gets all the payment methods
+   *
+   * @return all the payment methods
+   */
   public List<PaymentEntity> getAllPaymentMethods() {
     List<PaymentEntity> paymentEntities = paymentDao.getPaymentMethods();
     return paymentEntities;

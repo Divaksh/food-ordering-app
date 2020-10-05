@@ -68,7 +68,15 @@ public class OrderController {
   private RestaurantService restaurantService;
 
 
-  // Method that implements the endpoint to get coupon name
+  /**
+   * This API endpoint gets coupon details by coupon name
+   *
+   * @param authorization Bearer <access-token>
+   * @param couponName    Name of the coupon whose details are required.
+   * @return CouponDetailsResponse
+   * @throws AuthorizationFailedException If authorization is not valid.
+   * @throws CouponNotFoundException      If coupon name doesn't exist in database
+   */
   @CrossOrigin
   @RequestMapping(method = RequestMethod.GET, path = "order/coupon/{coupon_name}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
   public ResponseEntity<CouponDetailsResponse> getCouponByName(
@@ -88,7 +96,13 @@ public class OrderController {
     return new ResponseEntity<CouponDetailsResponse>(couponDetails, HttpStatus.OK);
   }
 
-  // Method to implement the endpoint to get past orders of customer
+  /**
+   * Fetch the orders of the customer.
+   *
+   * @param authorization Bearer <access-token>
+   * @return CustomerOrderResponse
+   * @throws AuthorizationFailedException If authorization is not valid.
+   */
   @CrossOrigin
   @RequestMapping(method = RequestMethod.GET, path = "/order", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
   public ResponseEntity<CustomerOrderResponse> getCustomerOrders(
@@ -159,14 +173,24 @@ public class OrderController {
 
         orderList.addItemQuantitiesItem(itemQuantityResponse);
       }
-
       customerOrderResponse.addOrdersItem(orderList);
     }
-
     return new ResponseEntity<CustomerOrderResponse>(customerOrderResponse, HttpStatus.OK);
   }
 
-  //Method to implement the endpoint to save customer orders
+  /**
+   * To save the customer order if it is valid.
+   *
+   * @param authorization    Bearer <access-token>
+   * @param saveOrderRequest Contains the order details.
+   * @return SaveOrderResponse
+   * @throws AuthorizationFailedException   If authorization is not valid.
+   * @throws CouponNotFoundException        if the coupon id entered is not valid.
+   * @throws AddressNotFoundException       if the address id entered doesn't belong to customer.
+   * @throws PaymentMethodNotFoundException if the payment id entered isn't available in db.
+   * @throws RestaurantNotFoundException    if the restaurant id entered isn't available in db.
+   * @throws ItemNotFoundException          if the item id entered isn't available in db.
+   */
   @CrossOrigin
   @RequestMapping(method = RequestMethod.POST, path = "/order", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
   public ResponseEntity<SaveOrderResponse> saveOrder(

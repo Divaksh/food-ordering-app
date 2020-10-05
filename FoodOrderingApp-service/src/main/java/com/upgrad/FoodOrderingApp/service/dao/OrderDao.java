@@ -30,6 +30,12 @@ public class OrderDao {
     return couponEntity;
   }
 
+  /**
+   * Fetches the orders of the customer in a sorted manner with latest order being on the top.
+   *
+   * @param customerEntity customer whose orders are to be fetched
+   * @return list of orders made by customer.
+   */
   public List<OrderEntity> getOrdersByCustomers(CustomerEntity customerEntity) {
     try {
       return entityManager.createNamedQuery("ordersByCustomer", OrderEntity.class)
@@ -39,23 +45,40 @@ public class OrderDao {
     }
   }
 
-
+  /**
+   * Order to be persisted in the database.
+   *
+   * @param order
+   * @return Persisted Order.
+   */
   @Transactional
   public OrderEntity createNewOrder(OrderEntity order) {
     entityManager.persist(order);
     return order;
   }
 
+  /**
+   * Order item that is to be persisted in the database.
+   *
+   * @param orderItemEntity
+   * @return persisted order item.
+   */
   @Transactional
   public OrderItemEntity createNewOrderItem(OrderItemEntity orderItemEntity) {
     entityManager.persist(orderItemEntity);
     return orderItemEntity;
   }
 
-  //This method fetches and returns all the orders of a restaurant
+  /**
+   * This method fetches and returns all the orders of a restaurant
+   *
+   * @param restaurant customer whose orders are to be fetched
+   * @return list of orders of a restaurant.
+   */
   public List<OrderEntity> getOrdersByRestaurant(RestaurantEntity restaurant) {
     try {
-      return entityManager.createNamedQuery("ordersByRestaurant", OrderEntity.class).setParameter("restaurant", restaurant).getResultList();
+      return entityManager.createNamedQuery("ordersByRestaurant", OrderEntity.class)
+          .setParameter("restaurant", restaurant).getResultList();
     } catch (NoResultException nre) {
       return null;
     }

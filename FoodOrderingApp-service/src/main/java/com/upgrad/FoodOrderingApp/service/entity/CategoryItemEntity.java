@@ -1,50 +1,63 @@
 package com.upgrad.FoodOrderingApp.service.entity;
-import javax.persistence.*;
-import java.io.Serializable;
 
+import java.io.Serializable;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
+/**
+ * CategoryItemEntity class contains all the attributes to be mapped to all the fields in
+ * 'category_item' table in the database
+ */
 @Entity
-@Table(name="category_item")
+@Table(name = "category_item")
 public class CategoryItemEntity implements Serializable {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name="id")
-    private Integer id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Column(name = "id")
+  private Integer id;
 
-    @ManyToOne(fetch=FetchType.EAGER)
-    @JoinColumn(name="item_id")
-    private ItemEntity itemId;
+  @ManyToOne(fetch = FetchType.EAGER)
+  @JoinColumn(name = "item_id")
+  private ItemEntity itemId;
 
-    @ManyToOne(fetch=FetchType.EAGER)
-    @JoinColumn(name="category_id")
-    private CategoryEntity categoryId;
+  @ManyToOne(fetch = FetchType.EAGER)
+  @JoinColumn(name = "category_id")
+  private CategoryEntity categoryId;
 
-    public Integer getId() {
-        return id;
-    }
+  public CategoryItemEntity() {
+  }
 
-    public void setId(Integer id) {
-        this.id = id;
-    }
+  public Integer getId() {
+    return id;
+  }
 
-    public ItemEntity getItemId() {
-        return itemId;
-    }
+  public void setId(Integer id) {
+    this.id = id;
+  }
 
-    public void setItemId(ItemEntity itemId) {
-        this.itemId = itemId;
-    }
+  public ItemEntity getItemId() {
+    return itemId;
+  }
 
-    public CategoryEntity getCategoryId() {
-        return categoryId;
-    }
+  public void setItemId(ItemEntity itemId) {
+    this.itemId = itemId;
+  }
 
-    public void setCategoryId(CategoryEntity categoryId) {
-        this.categoryId = categoryId;
-    }
+  public CategoryEntity getCategoryId() {
+    return categoryId;
+  }
 
-    public CategoryItemEntity() {
-    }
+  public void setCategoryId(CategoryEntity categoryId) {
+    this.categoryId = categoryId;
+  }
 }
 
 

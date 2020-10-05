@@ -14,6 +14,9 @@ public class BasicAuthDecoder {
 
     public BasicAuthDecoder(final String base64EncodedCredential) throws AuthenticationFailedException {
         final String[] decodedCredentials;
+        // ArrayIndexOutOfBoundsException occurs if the username or password is left as empty or try to
+        // authorize without Basic in prefix 'Basic Base64<contactNumber:password>' then it throws
+        // AuthenticationFailedException with code as ATH-003
         try {
             decodedCredentials = new String(Base64.getDecoder().decode(base64EncodedCredential.split("Basic ")[1])).split(":");
             username = decodedCredentials[0];

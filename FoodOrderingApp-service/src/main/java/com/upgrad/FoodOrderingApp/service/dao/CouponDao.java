@@ -14,7 +14,12 @@ public class CouponDao {
   @PersistenceContext
   private EntityManager entityManager;
 
-  //Method to get the Coupon from the database given coupon name
+  /**
+   * This method fetches CouponEntity from database based on the coupon name.
+   *
+   * @param couponName
+   * @return CouponEntity or null if there is no coupon in database by given name.
+   */
   public CouponEntity getCouponByCouponName(String couponName) {
     try {
       CouponEntity couponEntity = entityManager
@@ -26,7 +31,12 @@ public class CouponDao {
     }
   }
 
-  //Get the Coupon from DB given Coupon UUID
+  /**
+   * This method fetches CouponEntity from database based on the coupon id.
+   *
+   * @param couponId
+   * @return CouponEntity or null if there is no coupon in database by given id.
+   */
   public CouponEntity getCouponByUUID(String couponId) {
     final CouponEntity couponEntity;
     try {

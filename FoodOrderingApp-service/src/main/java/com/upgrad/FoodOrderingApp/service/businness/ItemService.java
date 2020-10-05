@@ -41,7 +41,13 @@ public class ItemService {
   private OrderDao orderDao;
 
 
-  //Returns category items based on the input restaurant Id and the category Id
+  /**
+   * This method gets Items for a given category in a restaurant
+   *
+   * @param restaurantId Restaurant whose items are to be queried, categoryUuid Category to be
+   *                     queried.
+   * @return List of ItemEntity
+   */
   public List<ItemEntity> getItemsByCategoryAndRestaurant(String restaurantId, String categoryId) {
     RestaurantEntity restaurantEntity = restaurantDao.restaurantByUUID(restaurantId);
     CategoryEntity categoryEntity = categoryDao.getCategoryByUuid(categoryId);
@@ -72,8 +78,12 @@ public class ItemService {
     }
   }
 
-  //This method fetches and returns Items list (All items) based on popularity of a given restaurant
-
+  /**
+   * This method gets top five popular items of a restaurant.
+   *
+   * @param restaurantEntity Restaurant whose top five items are to be queried.
+   * @return top five items
+   */
   public List<ItemEntity> getItemsByPopularity(RestaurantEntity restaurantEntity) {
     List<ItemEntity> itemEntityList = new ArrayList<ItemEntity>();
     for (OrderEntity orderEntity : orderDao.getOrdersByRestaurant(restaurantEntity)) {

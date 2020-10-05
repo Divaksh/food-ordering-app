@@ -12,9 +12,13 @@ public class ItemDao {
   @PersistenceContext
   private EntityManager entityManager;
 
-
+  /**
+   * Fetch the item based on id.
+   *
+   * @param itemId UUID of the item to be fetched.
+   * @return ItemEntity if found in database else null
+   */
   public ItemEntity getItemById(String itemId) {
-
     try {
       ItemEntity itemEntity = entityManager.createNamedQuery("itemById", ItemEntity.class)
           .setParameter("itemId", itemId)
@@ -24,13 +28,17 @@ public class ItemDao {
       return null;
     }
   }
-  //This method returns Item details based on the input id parameter
 
-
-  public ItemEntity getItemByUUID(String uuid) {
+  /**
+   * Fetch the item based on UUID.
+   *
+   * @param itemUUID UUID of the item to be fetched.
+   * @return ItemEntity if found in database else null
+   */
+  public ItemEntity getItemByUUID(String itemUUID) {
     try {
       return entityManager.createNamedQuery("itemByUUID", ItemEntity.class)
-          .setParameter("uuid", uuid).getSingleResult();
+          .setParameter("uuid", itemUUID).getSingleResult();
     } catch (NoResultException nre) {
       return null;
     }

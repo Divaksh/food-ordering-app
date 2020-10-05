@@ -15,7 +15,12 @@ public class OrderItemDao {
   @PersistenceContext
   private EntityManager entityManager;
 
-
+  /**
+   * Fetch all the item of a given order.
+   *
+   * @param orderEntity
+   * @return List of OrderEntity.
+   */
   public List<OrderItemEntity> getItemsByOrder(OrderEntity orderEntity) {
     try {
       return entityManager.createNamedQuery("itemsByOrder", OrderItemEntity.class)

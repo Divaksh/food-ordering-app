@@ -24,14 +24,22 @@ public class RestaurantService {
   @Autowired
   private CategoryDao categoryDao;
 
-  //This method returns all the restaurants according to the customer ratings
+  /**
+   * Gets all the restaurants in DB.
+   *
+   * @return List of all the restaurants according to the customer ratings
+   */
   public List<RestaurantEntity> restaurantsByRating() {
     List<RestaurantEntity> restaurantEntities = restaurantDao.getAllRestaurantsByRating();
     return restaurantEntities;
   }
 
-  //This method checks for the restaurant search field if its empty it throws corresponding exception
-  //It also returns the restaurants even if there is partial match in the restaurant in DB and the resto. mentioned in search field
+  /**
+   * Gets restaurants in DB based on search string.
+   *
+   * @return List of the restaurants even if there is partial match in the restaurant in DB and the
+   * resto. mentioned in search field
+   */
   public List<RestaurantEntity> restaurantsByName(final String restaurantName)
       throws RestaurantNotFoundException {
     if (restaurantName.isEmpty()) {
@@ -42,7 +50,6 @@ public class RestaurantService {
     List<RestaurantEntity> matchingRestaurantList = new ArrayList<>();
 
     //matching restaurants with the restaurant name mentioned in the search field and if matched populating the resto. in the matched resto. list
-
     for (RestaurantEntity restaurantEntity : restaurantListByRating) {
       if (restaurantEntity.getRestaurantName().toLowerCase()
           .contains(restaurantName.toLowerCase())) {
@@ -53,11 +60,11 @@ public class RestaurantService {
     return matchingRestaurantList;
   }
 
-  //This method returns all the restaurants based on the input category Id
-  //If the entered input category id is empty then it throws CNF exception with message Category id field should not be empty
-  //If a input category is not present then it returns another CNF exception No Category By this id
-  //If the input category Id is present then it returns all restaurants in that category in the alphabetical order
-
+  /**
+   * Gets all the restaurants in DB based on Category Uuid
+   *
+   * @return List of all the restaurants based on the input category Id
+   */
   public List<RestaurantEntity> restaurantByCategory(final String categoryId)
       throws CategoryNotFoundException {
 
@@ -76,9 +83,13 @@ public class RestaurantService {
     return restaurantListByCategoryId;
   }
 
-  //This method updates the restaurant ratings if its satisfies the criterion of input rating must be
-  //between 1 to 5 recalculates the average rating updates the rating and number of customers rated
-  //and returns the updated restaurant details
+  /**
+   * Updates the customer rating for a restaurant
+   *
+   * @param restaurantEntity Restaurant whose rating is to be done, customerRating as provided by
+   *                         customer
+   * @return RestaurantEntity the updated restaurant details
+   */
   @Transactional(propagation = Propagation.REQUIRED)
   public RestaurantEntity updateRestaurantRating(RestaurantEntity restaurantEntity,
       Double newRating)
@@ -99,13 +110,19 @@ public class RestaurantService {
 
   }
 
-  //This method returns the restaurant based on input restaurant ID
-  public RestaurantEntity restaurantByUUID(String uuid) throws RestaurantNotFoundException {
-    if (uuid.equals("")) {
+  /**
+   * This method gets the restaurant details.
+   *
+   * @param restaurantId UUID of the restaurant.
+   * @return the restaurant based on input restaurant ID
+   * @throws RestaurantNotFoundException if restaurant with UUID doesn't exist in the database.
+   */
+  public RestaurantEntity restaurantByUUID(String restaurantId) throws RestaurantNotFoundException {
+    if (restaurantId.equals("")) {
       throw new RestaurantNotFoundException("RNF-002", "Restaurant id field should not be empty");
     }
 
-    RestaurantEntity restaurantByRestaurantId = restaurantDao.restaurantByUUID(uuid);
+    RestaurantEntity restaurantByRestaurantId = restaurantDao.restaurantByUUID(restaurantId);
 
     if (restaurantByRestaurantId == null) {
       throw new RestaurantNotFoundException("RNF-001", "No Restaurant By this Id");

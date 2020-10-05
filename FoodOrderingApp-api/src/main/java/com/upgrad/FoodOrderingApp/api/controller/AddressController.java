@@ -46,6 +46,11 @@ public class AddressController {
   @Autowired
   private AddressService addressService;
 
+  /**
+   * This api endpoint is used to save address for a customer
+   *
+   * @return ResponseEntity<SaveAddressResponse> type object along with HttpStatus Ok
+   */
   @CrossOrigin
   @RequestMapping(method = POST, path = "/address", consumes = APPLICATION_JSON_UTF8_VALUE, produces = APPLICATION_JSON_UTF8_VALUE)
   public ResponseEntity<SaveAddressResponse> saveAddress(
@@ -80,6 +85,11 @@ public class AddressController {
     return new ResponseEntity<SaveAddressResponse>(addressResponse, HttpStatus.CREATED);
   }
 
+  /**
+   * This api endpoint is used retrieve all the saved addresses in the database, for a customer
+   *
+   * @return ResponseEntity<AddressListResponse> type object along with HttpStatus OK
+   */
   @CrossOrigin
   @RequestMapping(method = GET, path = "/address/customer", produces = APPLICATION_JSON_UTF8_VALUE)
   public ResponseEntity<AddressListResponse> getAllAddresses(
@@ -115,7 +125,11 @@ public class AddressController {
 
   }
 
-
+  /**
+   * This api endpoint is used to delete an address
+   *
+   * @return ResponseEntity<DeleteAddResponse> with HTTP status ok
+   */
   @CrossOrigin
   @RequestMapping(method = DELETE, path = "/address/{address_id}", produces = APPLICATION_JSON_UTF8_VALUE)
   public ResponseEntity<DeleteAddressResponse> deleteAddress(
@@ -138,6 +152,11 @@ public class AddressController {
     return new ResponseEntity<DeleteAddressResponse>(deleteAddressResponse, HttpStatus.OK);
   }
 
+  /**
+   * This api endpoint is used retrieve all the states in the database
+   *
+   * @return ResponseEntity<StatesListResponse> type object along with HttpStatus OK
+   */
   @RequestMapping(method = GET, path = "/states", produces = APPLICATION_JSON_UTF8_VALUE)
   public ResponseEntity<StatesListResponse> getAllStates() {
     // Gets all states from the database
