@@ -4,6 +4,7 @@ import com.upgrad.FoodOrderingApp.service.entity.CouponEntity;
 import com.upgrad.FoodOrderingApp.service.entity.CustomerEntity;
 import com.upgrad.FoodOrderingApp.service.entity.OrderEntity;
 import com.upgrad.FoodOrderingApp.service.entity.OrderItemEntity;
+import com.upgrad.FoodOrderingApp.service.entity.RestaurantEntity;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
@@ -49,6 +50,15 @@ public class OrderDao {
   public OrderItemEntity createNewOrderItem(OrderItemEntity orderItemEntity) {
     entityManager.persist(orderItemEntity);
     return orderItemEntity;
+  }
+
+  //This method fetches and returns all the orders of a restaurant
+  public List<OrderEntity> getOrdersByRestaurant(RestaurantEntity restaurant) {
+    try {
+      return entityManager.createNamedQuery("ordersByRestaurant", OrderEntity.class).setParameter("restaurant", restaurant).getResultList();
+    } catch (NoResultException nre) {
+      return null;
+    }
   }
 
 }

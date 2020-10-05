@@ -19,7 +19,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import java.util.List;
 import java.util.UUID;
+import org.springframework.web.bind.annotation.RestController;
 
+@RestController
+@RequestMapping("/")
 public class CategoryController {
 
     @Autowired
