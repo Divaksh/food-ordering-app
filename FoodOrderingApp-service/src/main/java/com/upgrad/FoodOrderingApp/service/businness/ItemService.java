@@ -1,67 +1,80 @@
-package com.upgrad.FoodOrderingApp.service.businness;
+package com.upgrad.FoodOrderingApp.service.dao;
 
-
-import com.upgrad.FoodOrderingApp.service.dao.CategoryDao;
-import com.upgrad.FoodOrderingApp.service.dao.ItemDao;
-import com.upgrad.FoodOrderingApp.service.dao.OrderItemDao;
-import com.upgrad.FoodOrderingApp.service.dao.RestaurantDao;
-import com.upgrad.FoodOrderingApp.service.entity.CategoryEntity;
-import com.upgrad.FoodOrderingApp.service.entity.ItemEntity;
+import com.upgrad.FoodOrderingApp.service.entity.CouponEntity;
+import com.upgrad.FoodOrderingApp.service.entity.CustomerEntity;
 import com.upgrad.FoodOrderingApp.service.entity.OrderEntity;
 import com.upgrad.FoodOrderingApp.service.entity.OrderItemEntity;
+import com.upgrad.FoodOrderingApp.service.entity.OrderEntity;
 import com.upgrad.FoodOrderingApp.service.entity.RestaurantEntity;
-import com.upgrad.FoodOrderingApp.service.exception.ItemNotFoundException;
-import java.util.ArrayList;
-import java.util.Comparator;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
+
+import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
+import javax.persistence.PersistenceContext;
 import java.util.List;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import java.util.UUID;
 
-@Service
-public class ItemService {
+@Repository
+public class OrderDao {
 
-  @Autowired
-  private RestaurantDao restaurantDao;
+  @PersistenceContext
+  private EntityManager entityManager;
 
-  @Autowired
-  private CategoryDao categoryDao;
-
-  @Autowired
-  private OrderItemDao orderItemDao;
-
-  @Autowired
-  private ItemDao itemDao;
-
-
-  //Returns category items based on the input restaurant Id and the category Id
-  public List<ItemEntity> getItemsByCategoryAndRestaurant(String restaurantId, String categoryId) {
-    RestaurantEntity restaurantEntity = restaurantDao.restaurantByUUID(restaurantId);
-    CategoryEntity categoryEntity = categoryDao.getCategoryByUuid(categoryId);
-    List<ItemEntity> restaurantItemList = new ArrayList<>();
-
-    for (ItemEntity restaurantItem : restaurantEntity.getItems()) {
-      for (ItemEntity categoryItem : categoryEntity.getItems()) {
-        if (restaurantItem.getUuid().equals(categoryItem.getUuid())) {
-          restaurantItemList.add(restaurantItem);
-        }
-      }
+  public CouponEntity getCouponByName(String couponName){
+    final CouponEntity couponEntity;
+    try {
+      couponEntity = entityManager.createNamedQuery("couponByCouponName", CouponEntity.class)
+              .setParameter("couponName", couponName).getSingleResult();
+    } catch (NoResultException nre) {
+      return null;
     }
-    restaurantItemList.sort(Comparator.comparing(ItemEntity::getItemName));
-    return restaurantItemList;
+
+    return couponEntity;
   }
 
-  public List<OrderItemEntity> getItemsByOrder(OrderEntity orderEntity) {
-    return orderItemDao.getItemsByOrder(orderEntity);
-  }
-
-  //Method called to get the ItemEntity Instance by passing the UUID
-  public ItemEntity getItemByUUID(String itemId) throws ItemNotFoundException {
-    ItemEntity itemEntity = itemDao.getItemById(itemId);
-    if (itemEntity == null) {
-      throw new ItemNotFoundException("INF-003", "No item by this id exist");
-    } else {
-      return itemEntity;
+  public List<OrderEntity> getPastOrders(CustomerEntity customerEntity) {
+    final List<OrderEntity> pastOrders;
+    try {
+      pastOrders = entityManager.createNamedQuery("pastOrdersByDate", OrderEntity.class)
+              .setParameter("customer", customerEntity)
+              .getResultList();
+      return pastOrders;
+    }catch (NoResultException nre){
+      return null;
     }
   }
 
+
+  @Transactional
+  public OrderEntity createNewOrder(OrderEntity order) {
+    entityManager.persist(order);
+    return order;
+  }
+
+  @Transactional
+  public OrderItemEntity createNewOrderItem(OrderItemEntity orderItemEntity) {
+    entityManager.persist(orderItemEntity);
+    return orderItemEntity;
+  }
+
+  public List<OrderEntity> getOrdersByCustomers(CustomerEntity customerEntity) {
+    try {
+      return entityManager.createNamedQuery("ordersByCustomer", OrderEntity.class).setParameter("customer", customerEntity).getResultList();
+    }
+    catch (NoResultException nre) {
+      return null;
+    }
+  }
+
+
+  //This method fetches and returns all the orders of a restaurant
+
+  public List<OrderEntity> getOrdersByRestaurant(RestaurantEntity restaurant) {
+    try {
+      return entityManager.createNamedQuery("ordersByRestaurant", OrderEntity.class).setParameter("restaurant", restaurant).getResultList();
+    } catch (NoResultException nre) {
+      return null;
+    }
+  }
 }
