@@ -4,12 +4,16 @@ import com.upgrad.FoodOrderingApp.service.entity.CouponEntity;
 import com.upgrad.FoodOrderingApp.service.entity.CustomerEntity;
 import com.upgrad.FoodOrderingApp.service.entity.OrderEntity;
 import com.upgrad.FoodOrderingApp.service.entity.OrderItemEntity;
-import java.util.List;
+import com.upgrad.FoodOrderingApp.service.entity.OrderEntity;
+import com.upgrad.FoodOrderingApp.service.entity.RestaurantEntity;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
+
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
-import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
+import java.util.List;
+import java.util.UUID;
 
 @Repository
 public class OrderDao {
@@ -17,11 +21,11 @@ public class OrderDao {
   @PersistenceContext
   private EntityManager entityManager;
 
-  public CouponEntity getCouponByName(String couponName) {
+  public CouponEntity getCouponByName(String couponName){
     final CouponEntity couponEntity;
     try {
       couponEntity = entityManager.createNamedQuery("couponByCouponName", CouponEntity.class)
-          .setParameter("couponName", couponName).getSingleResult();
+              .setParameter("couponName", couponName).getSingleResult();
     } catch (NoResultException nre) {
       return null;
     }
@@ -29,11 +33,14 @@ public class OrderDao {
     return couponEntity;
   }
 
-  public List<OrderEntity> getOrdersByCustomers(CustomerEntity customerEntity) {
+  public List<OrderEntity> getPastOrders(CustomerEntity customerEntity) {
+    final List<OrderEntity> pastOrders;
     try {
-      return entityManager.createNamedQuery("ordersByCustomer", OrderEntity.class)
-          .setParameter("customer", customerEntity).getResultList();
-    } catch (NoResultException nre) {
+      pastOrders = entityManager.createNamedQuery("pastOrdersByDate", OrderEntity.class)
+              .setParameter("customer", customerEntity)
+              .getResultList();
+      return pastOrders;
+    }catch (NoResultException nre){
       return null;
     }
   }
@@ -51,4 +58,23 @@ public class OrderDao {
     return orderItemEntity;
   }
 
+  public List<OrderEntity> getOrdersByCustomers(CustomerEntity customerEntity) {
+    try {
+      return entityManager.createNamedQuery("ordersByCustomer", OrderEntity.class).setParameter("customer", customerEntity).getResultList();
+    }
+    catch (NoResultException nre) {
+      return null;
+    }
+  }
+
+
+  //This method fetches and returns all the orders of a restaurant
+
+  public List<OrderEntity> getOrdersByRestaurant(RestaurantEntity restaurant) {
+    try {
+      return entityManager.createNamedQuery("ordersByRestaurant", OrderEntity.class).setParameter("restaurant", restaurant).getResultList();
+    } catch (NoResultException nre) {
+      return null;
+    }
+  }
 }
